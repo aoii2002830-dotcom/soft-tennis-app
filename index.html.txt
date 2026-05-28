@@ -7,9 +7,9 @@
     <style>
         :root {
             --primary-color: #2c3e50;
-            --accent-color: #3498db;
             --court-color: #27ae60;
             --line-color: #ffffff;
+            --ball-road-color: rgba(255, 235, 59, 0.25); /* 打球の広さを表す薄い黄色 */
         }
 
         * {
@@ -21,7 +21,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #f5f6fa;
             color: var(--primary-color);
             display: flex;
@@ -29,7 +29,6 @@
             align-items: center;
         }
 
-        /* アプリ風のヘッダー */
         .app-header {
             width: 100%;
             background-color: var(--primary-color);
@@ -44,115 +43,91 @@
             z-index: 100;
         }
 
-        /* メインコンテンツ容器 */
         .app-container {
             width: 100%;
             max-width: 500px;
-            padding: 15px;
+            padding: 20px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 35px; /* 各要素の間隔を広げて窮屈さを解消 */
         }
 
-        /* コート外枠（レスポンシブ） */
+        /* コート外枠（写真通りの縦長感をしっかり確保） */
         .court-wrapper {
             position: relative;
             width: 100%;
-            aspect-ratio: 1 / 1.4; /* 縦長コートの黄金比 */
+            aspect-ratio: 1 / 1.5; 
             background-color: var(--court-color);
             border: 15px solid var(--court-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
-        /* テニスコートのライン */
-        .court-line {
-            position: absolute;
-            border: 2px solid var(--line-color);
-        }
-
-        /* 外枠（シングルス・ダブルス兼用） */
-        .lines-outer {
-            top: 0; left: 0; right: 0; bottom: 0;
-        }
-        /* インサイドライン（ダブルスサイドライン） */
-        .lines-doubles-left { top: 0; bottom: 0; left: 8%; border-left: 2px solid var(--line-color); }
-        .lines-doubles-right { top: 0; bottom: 0; right: 8%; border-right: 2px solid var(--line-color); }
-        
-        /* サービスライン */
-        .line-service-top { top: 25%; left: 8%; right: 8%; height: 0; }
-        .line-service-bottom { bottom: 25%; left: 8%; right: 8%; height: 0; }
-        
-        /* センターライン */
+        /* コートのライン */
+        .court-line { position: absolute; border: 2px solid var(--line-color); }
+        .lines-outer { top: 0; left: 0; right: 0; bottom: 0; }
+        .lines-doubles-left { top: 0; bottom: 0; left: 10%; border-left: 2px solid var(--line-color); }
+        .lines-doubles-right { top: 0; bottom: 0; right: 10%; border-right: 2px solid var(--line-color); }
+        .line-service-top { top: 25%; left: 10%; right: 10%; height: 0; }
+        .line-service-bottom { bottom: 25%; left: 10%; right: 10%; height: 0; }
         .line-center { top: 25%; bottom: 25%; left: 50%; width: 0; }
-
-        /* ネット */
         .line-net {
             top: 50%; left: -5%; right: -5%; height: 0;
-            border-top: 3px dashed rgba(255,255,255,0.8);
-        }
-        .line-net-band {
-            position: absolute;
-            top: 50%; left: 0; right: 0; height: 2px;
-            background-color: #e74c3c;
-            transform: translateY(-1px);
+            border-top: 3px dashed rgba(255,255,255,0.9);
         }
 
-        /* プレイヤー（駒）共通設定 */
+        /* 【新機能】写真通りの「打球の広さ（コース）」を表す扇形の背景 */
+        .ball-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 駒のデザイン */
         .player {
             position: absolute;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             transform: translate(-50%, -50%);
             z-index: 10;
         }
 
-        /* 操作する赤点（後衛） */
+        /* 後衛（赤点：動かせる） */
         #player-rear {
             background-color: #e74c3c;
-            border: 2px solid #ffffff;
+            border: 2.5px solid #ffffff;
             cursor: grab;
             touch-action: none;
         }
-        #player-rear:active { cursor: grabbing; }
 
-        /* 自動連動する青点（前衛） */
+        /* 前衛（青点：自動連動） */
         #player-front {
             background-color: #3498db;
-            border: 2px solid #ffffff;
-            transition: left 0.05s ease-out, top 0.05s ease-out;
-            pointer-events: none; /* タッチ不可 */
+            border: 2.5px solid #ffffff;
+            pointer-events: none;
         }
 
-        /* 仮想の敵位置（右奥の角）の目印 */
-        .target-corner {
-            position: absolute;
-            top: 2px;
-            right: 8%;
-            width: 8px;
-            height: 8px;
-            background-color: rgba(255,255,255,0.4);
-            border-radius: 50%;
-            transform: translate(50%, -50%);
-        }
-
-        /* アプリ風説明書パネル */
+        /* 説明書パネル（下に十分な余白を持たせる） */
         .info-card {
             width: 100%;
             background-color: white;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 40px; /* 一番下の窮屈さを完全に解消 */
         }
 
         .info-card h2 {
@@ -160,10 +135,7 @@
             font-size: 1.1rem;
             color: var(--primary-color);
             border-bottom: 2px solid #edf2f7;
-            padding-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            padding-bottom: 10px;
         }
 
         .info-card ul {
@@ -171,30 +143,21 @@
             padding-left: 20px;
             color: #64748b;
             font-size: 0.9rem;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
-        .info-card li {
-            margin-bottom: 8px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: white;
-            margin: 0 2px;
-        }
+        .info-card li { margin-bottom: 10px; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: white; }
         .badge-red { background-color: #e74c3c; }
         .badge-blue { background-color: #3498db; }
     </style>
 </head>
 <body>
 
-    <div class="app-header">ソフトテニス ポジション確認</div>
+    <div class="app-header">ソフトテニス ポジションシミュレーター</div>
 
     <div class="app-container">
+        <!-- コート枠 -->
         <div class="court-wrapper" id="court">
             <div class="court-line lines-outer"></div>
             <div class="lines-doubles-left"></div>
@@ -203,21 +166,26 @@
             <div class="court-line line-service-bottom"></div>
             <div class="court-line line-center"></div>
             <div class="line-net"></div>
-            <div class="line-net-band"></div>
 
-            <div class="target-corner"></div>
+            <!-- 打球の広さを描画するSVGエリア -->
+            <svg class="ball-zone" id="ball-zone-svg">
+                <!-- 相手の打球可能範囲（扇形）を動的に描画 -->
+                <polygon id="ball-angle-poly" fill="rgba(255, 242, 0, 0.25)" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+            </svg>
 
+            <!-- プレイヤーの駒 -->
             <div id="player-front" class="player">前衛</div>
             <div id="player-rear" class="player">後衛</div>
         </div>
 
+        <!-- 説明書 -->
         <div class="info-card">
-            <h2>📱 アプリの使い方・説明書</h2>
+            <h2>📱 アプリの使い方</h2>
             <ul>
-                <li>赤い丸<span class="badge badge-red">後衛</span>を指でタッチして、好きな場所に動かしてみてください。</li>
-                <li>後衛を動かすと、青い丸<span class="badge badge-blue">前衛</span>が自動的に適切なポジションへ連動して移動します。</li>
-                <li><strong>ポジションの法則：</strong> 前衛は、<span class="badge badge-red">後衛の位置</span>と、ネットの向こう側（相手コート）の右角を結んだ直線上（ネットの手前付近）に自動で配置されます。</li>
-                <li>実際の試合や乱打でのポジション修正、展開のイメージトレーニングに活用してください！</li>
+                <li>下の赤い丸<span class="badge badge-red">後衛</span>を指で掴んで動かせます。</li>
+                <li>後衛を動かすと、相手コートの「左角」と「右角」へ飛ぶ**打球の広さ（黄色いエリア）**が自動で変化します。</li>
+                <li>青い丸<span class="badge badge-blue">前衛</span>は、その打球の広さのちょうど**真ん中（センターライン）の直線上で、ネット際**に自動でポジションを取ります！</li>
+                <li>画面下部に余裕を持たせ、操作しやすく調整しました。</li>
             </ul>
         </div>
     </div>
@@ -226,54 +194,92 @@
         const court = document.getElementById('court');
         const rear = document.getElementById('player-rear');
         const front = document.getElementById('player-front');
+        const poly = document.getElementById('ball-angle-poly');
 
-        // コートサイズに対する初期位置（％）
-        let rearX = 50; // 真ん中
-        let rearY = 85; // ベースライン付近
+        // 初期位置
+        let rearX = 50; 
+        let rearY = 85; 
 
-        // 相手コートの目標点（右奥の角：X=92%, Y=0%）
-        const targetX = 92;
-        const targetY = 0;
+        // 相手コートの左右の角（ここに向けて打球が広がると仮定）
+        const leftTargetX = 10;  // 左ダブルスライン
+        const rightTargetX = 90; // 右ダブルスライン
+        const targetY = 0;       // 相手のベースライン
 
-        // ネットの位置（コート中央 Y=50%）。前衛が守るY座標の基準（少し手前の55%付近）
-        const frontBaseY = 56;
+        // 前衛が守る高さ（ネットのすぐ下 Y=55%）
+        const frontBaseY = 55;
 
-        // 位置を画面に反映し、前衛の連動位置を計算する関数
         function updatePositions() {
-            // 後衛の表示更新
+            // 後衛の位置反映
             rear.style.left = rearX + '%';
             rear.style.top = rearY + '%';
 
-            // 【超重要】連動の計算ロジック
-            // 後衛(rearX, rearY) と 相手角(targetX, targetY) を結ぶ直線が、前衛の守る高さ(frontBaseY)と交わるX座標を計算
-            // 公式: X = rearX + (targetX - rearX) * (rearY - frontBaseY) / (rearY - targetY)
-            // スマホでの見え方をさらに調整するため、ネットに近づくほどボールの角度に狭まるように補正
+            // コートの実際のピクセルサイズを取得してSVGの座標を計算
+            const w = court.clientWidth;
+            const h = court.clientHeight;
+
+            const rx = (rearX / 100) * w;
+            const ry = (rearY / 100) * h;
+            const ltx = (leftTargetX / 100) * w;
+            const rtx = (rightTargetX / 100) * w;
+            const ty = (targetY / 100) * h;
+
+            // 写真通りの「打球の広さ（三角形のビーム）」を画面に描く
+            poly.setAttribute('points', `${rx},${ry} ${ltx},${ty} ${rtx},${ty}`);
+
+            // 前衛の位置計算（左右のターゲットのちょうど真ん中に向かう直線上に配置）
+            const centerTargetX = (leftTargetX + rightTargetX) / 2; // = 50% (センター)
             
-            let calculatedFrontX = rearX + (targetX - rearX) * (rearY - frontBaseY) / (rearY - targetY);
+            // 後衛からセンターへ向かう直線上の、ネット際(frontBaseY)のX座標を計算
+            let calculatedFrontX = rearX + (centerTargetX - rearX) * (rearY - frontBaseY) / (rearY - targetY);
 
-            // 前衛がコート外に飛び出さないようにブレーキ（可動範囲の制限）
-            if (calculatedFrontX < 12) calculatedFrontX = 12;
-            if (calculatedFrontX > 88) calculatedFrontX = 88;
+            // 前衛のコート外飛び出し防止
+            if (calculatedFrontX < 15) calculatedFrontX = 15;
+            if (calculatedFrontX > 85) calculatedFrontX = 85;
 
-            // 前衛の表示更新
+            // 前衛の位置反映
             front.style.left = calculatedFrontX + '%';
             front.style.top = frontBaseY + '%';
         }
 
-        // 初期配置を実行
-        updatePositions();
+        // 読み込み時に実行
+        window.addEventListener('resize', updatePositions);
+        setTimeout(updatePositions, 100);
 
-        // タッチ操作（ドラッグ）のイベント登録
+        // ドラッグ処理
         function handleMove(e) {
             e.preventDefault();
             const rect = court.getBoundingClientRect();
-            
-            // タッチとマウスの両方に対応
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-            // タッチ座標をコート内のパーセンテージ(0〜100)に変換
             let x = ((clientX - rect.left) / rect.width) * 100;
             let y = ((clientY - rect.top) / rect.height) * 100;
 
-            // 後衛は自分のコート（下半分：ネットY=50%より下）
+            // 移動範囲制限（自分のコート側のみ）
+            if (x < 5) x = 5;
+            if (x > 95) x = 95;
+            if (y < 53) y = 53; 
+            if (y > 95) y = 95; 
+
+            rearX = x;
+            rearY = y;
+            updatePositions();
+        }
+
+        court.addEventListener('touchstart', (e) => {
+            if (e.target === rear) {
+                court.addEventListener('touchmove', handleMove, { passive: false });
+            }
+        });
+        court.addEventListener('touchend', () => {
+            court.removeEventListener('touchmove', handleMove);
+        });
+        rear.addEventListener('mousedown', () => {
+            court.addEventListener('mousemove', handleMove);
+        });
+        window.addEventListener('mouseup', () => {
+            court.removeEventListener('mousemove', handleMove);
+        });
+    </script>
+</body>
+</html>
