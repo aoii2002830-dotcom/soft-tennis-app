@@ -6,8 +6,8 @@
 <title>ソフトテニス</title>
 <style>
 body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;}
-.title{font-size:20px;font-weight:bold;margin-bottom:20px;color:#2c3e50;}
-.court{position:relative;width:100%;max-width:400px;aspect-ratio:1/1.5;background:#27ae60;border:10px solid #27ae60;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.15);overflow:hidden;}
+.title{font-size:18px;font-weight:bold;margin-bottom:15px;color:#2c3e50;}
+.court{position:relative;width:100%;max-width:360px;aspect-ratio:1/1.5;background:#27ae60;border:10px solid #27ae60;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.15);overflow:hidden;}
 .line{position:absolute;border:2px solid white;}
 .outer{top:0;left:0;right:0;bottom:0;}
 .dl{top:0;bottom:0;left:10%;border-left:2px solid white;}
@@ -17,10 +17,17 @@ body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;displa
 .cl{top:25%;bottom:25%;left:50%;width:0;}
 .net{top:50%;left:-5%;right:-5%;border-top:3px dashed rgba(255,255,255,0.8);}
 .ball-zone{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
-.player{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;color:white;transform:translate(-50%,-50%);box-shadow:0 4px 8px rgba(0,0,0,0.3);user-select:none;}
-#rear{background:#e74c3c;border:2px solid white;touch-action:none;cursor:grab;z-index:10;}
-#front{background:#3498db;border:2px solid white;pointer-events:none;}
-.info{width:100%;max-width:400px;background:white;border-radius:12px;padding:15px;margin-top:25px;box-shadow:0 2px 5px rgba(0,0,0,0.05);color:#64748b;font-size:13px;line-height:1.7;margin-bottom:40px;}
+.player{position:absolute;width:38px;height:38px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:11px;font-weight:bold;color:white;transform:translate(-50%,-50%);box-shadow:0 4px 8px rgba(0,0,0,0.3);user-select:none;}
+#rear{background:#e74c3c;border:2px solid white;z-index:10;}
+#front{background:#3498db;border:2px solid white;}
+
+/* 【新設】操作バーのエリア */
+.controls{width:100%;max-width:360px;background:white;border-radius:12px;padding:15px;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);box-sizing:border-box;text-align:center;}
+.controls label{display:block;font-size:13px;font-weight:bold;color:#2c3e50;margin-bottom:8px;}
+.slider{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:#dee2e6;outline:none;}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:#e74c3c;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.2);}
+
+.info{width:100%;max-width:360px;background:white;border-radius:12px;padding:15px;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);color:#64748b;font-size:12px;line-height:1.6;margin-bottom:40px;box-sizing:border-box;}
 </style>
 </head>
 <body>
@@ -37,19 +44,26 @@ body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;displa
 <div id="front" class="player">前衛</div>
 <div id="rear" class="player">後衛</div>
 </div>
+
+<div class="controls">
+<label>🎛️ 後衛を左右に動かす</label>
+<input type="range" id="move-slider" class="slider" min="10" max="90" value="50">
+</div>
+
 <div class="info">
 <b>📱 アプリの使い方</b><br>
-・赤い丸（後衛）を指でドラッグできます。<br>
-・動かすと、相手コートへの打球範囲（黄色いエリア）が変化します。<br>
-・青い丸（前衛）は、打球範囲の真ん中をふさぐネット前のポジションへ自動で移動します。<br>
-・スマホ・タブレット・PC対応です。
+・コートの下にある<b>赤いボタンの操作バー</b>を左右にスライドさせてください。<br>
+・赤い丸（後衛）が連動して左右にスムーズに動きます。<br>
+・後衛の動きに合わせて、相手コートへの打球範囲（黄色）と、青い丸（前衛）のポジションが<b>自動でピッタリ直線上に連動</b>します！
 </div>
 <script>
 const crt=document.getElementById('crt');
 const rear=document.getElementById('rear');
 const front=document.getElementById('front');
 const poly=document.getElementById('poly');
-let rx=50;let ry=85;let dragging=false;
+const slider=document.getElementById('move-slider');
+
+let rx=50;const ry=85;
 function update(){
 rear.style.left=rx+'%';rear.style.top=ry+'%';
 const w=crt.clientWidth;const h=crt.clientHeight;
@@ -59,4 +73,12 @@ let fx=rx+(50-rx)*(ry-55)/(ry-0);
 if(fx<15)fx=15;if(fx>85)fx=85;
 front.style.left=fx+'%';front.style.top='55%';
 }
-function
+slider.addEventListener('input',(e)=>{
+rx=parseInt(e.target.value);
+update();
+});
+window.addEventListener('resize',update);
+update();
+</script>
+</body>
+</html>
