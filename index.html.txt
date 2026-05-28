@@ -12,7 +12,7 @@ body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;displa
 .outer{top:0;left:0;right:0;bottom:0;}
 .dl{top:0;bottom:0;left:10%;border-left:2px solid white;}
 .dr{top:0;bottom:0;right:10%;border-right:2px solid white;}
-.st{top:25%;left:10%;right:10使う;}
+.st{top:25%;left:10%;right:10%;}
 .sb{bottom:25%;left:10%;right:10%;}
 .cl{top:25%;bottom:25%;left:50%;width:0;}
 .net{top:50%;left:-5%;right:-5%;border-top:3px dashed rgba(255,255,255,0.8);}
@@ -59,20 +59,4 @@ let fx=rx+(50-rx)*(ry-55)/(ry-0);
 if(fx<15)fx=15;if(fx>85)fx=85;
 front.style.left=fx+'%';front.style.top='55%';
 }
-function movePlayer(clientX,clientY){
-const r=crt.getBoundingClientRect();
-let x=((clientX-r.left)/r.width)*100;let y=((clientY-r.top)/r.height)*100;
-x=Math.max(5,Math.min(95,x));y=Math.max(53,Math.min(95,y));
-rx=x;ry=y;update();
-}
-rear.addEventListener('touchstart',(e)=>{dragging=true;e.preventDefault();},{passive:false});
-window.addEventListener('touchmove',(e)=>{if(!dragging)return;movePlayer(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();},{passive:false});
-window.addEventListener('touchend',()=>{dragging=false;});
-rear.addEventListener('mousedown',()=>{dragging=true;});
-window.addEventListener('mousemove',(e)=>{if(!dragging)return;movePlayer(e.clientX,e.clientY);});
-window.addEventListener('mouseup',()=>{dragging=false;});
-window.addEventListener('resize',update);
-update();
-</script>
-</body>
-</html>
+function
