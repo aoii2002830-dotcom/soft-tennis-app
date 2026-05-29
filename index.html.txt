@@ -1,74 +1,394 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ソフトテニス</title>
-<style>
-body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;}
-.title{font-size:18px;font-weight:bold;margin-bottom:15px;color:#2c3e50;}
-.court{position:relative;width:100%;max-width:360px;aspect-ratio:1/1.5;background:#27ae60;border:10px solid #27ae60;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.15);overflow:hidden;}
-.line{position:absolute;border:2px solid white;}
-.outer{top:0;left:0;right:0;bottom:0;}
-.dl{top:0;bottom:0;left:10%;border-left:2px solid white;}
-.dr{top:0;bottom:0;right:10%;border-right:2px solid white;}
-.st{top:25%;left:10%;right:10%;}
-.sb{bottom:25%;left:10%;right:10%;}
-.cl{top:25%;bottom:25%;left:50%;width:0;}
-.net{top:50%;left:-5%;right:-5%;border-top:3px dashed rgba(255,255,255,0.8);}
-.ball-zone{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
-.player{position:absolute;width:38px;height:38px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:11px;font-weight:bold;color:white;transform:translate(-50%,-50%);box-shadow:0 4px 8px rgba(0,0,0,0.3);user-select:none;}
-#rear{background:#e74c3c;border:2px solid white;z-index:10;}
-#front{background:#3498db;border:2px solid white;}
-.controls{width:100%;max-width:360px;background:white;border-radius:12px;padding:15px;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);box-sizing:border-box;text-align:center;}
-.controls label{display:block;font-size:13px;font-weight:bold;color:#2c3e50;margin-bottom:8px;}
-.slider{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:#dee2e6;outline:none;}
-.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:#e74c3c;cursor:pointer;}
-.info{width:100%;max-width:360px;background:white;border-radius:12px;padding:15px;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);color:#64748b;font-size:12px;line-height:1.6;margin-bottom:40px;box-sizing:border-box;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ソフトテニス 前衛ポジショニングシミュレーター</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b132b;
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h3 {
+            margin: 10px 0 5px 0;
+            font-size: 14px;
+            color: #a0aec0;
+            text-align: center;
+        }
+
+        /* コート外枠 */
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 390px; /* スマホサイズ基準 */
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        canvas {
+            display: block;
+            background-color: #1a4d32; /* テニスコートの緑 */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        /* 下部コントロールパネル */
+        .control-panel {
+            background-color: #1c2541;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider-title {
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .angle-badge {
+            background-color: #3a2232;
+            color: #ff5252;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #485563;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
+        /* プリセットボタン */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .preset-btn {
+            background-color: #243b55;
+            border: 1px solid #385170;
+            color: #a0aec0;
+            border-radius: 8px;
+            padding: 6px 4px;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .preset-btn.active {
+            background-color: #1e3a8a;
+            border-color: #3b82f6;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .preset-btn div:last-child {
+            font-size: 9px;
+            color: #718096;
+            margin-top: 2px;
+        }
+        
+        .preset-btn.active div:last-child {
+            color: #93c5fd;
+        }
+    </style>
 </head>
 <body>
-<div class="title">ソフトテニス ポジション確認</div>
-<div class="court" id="crt">
-<div class="line outer"></div>
-<div class="dl"></div>
-<div class="dr"></div>
-<div class="line st"></div>
-<div class="line sb"></div>
-<div class="line cl"></div>
-<div class="net"></div>
-<svg class="ball-zone"><polygon id="poly" fill="rgba(255,242,0,0.25)"></polygon></svg>
-<div id="front" class="player">前衛</div>
-<div id="rear" class="player">後衛</div>
+
+<div class="container">
+    <h3>打点（赤丸）を左右にドラッグして、前衛の立ち位置の変化を確認しよう</h3>
+    
+    <canvas id="courtCanvas" width="360" height="460"></canvas>
+
+    <div class="control-panel">
+        <div class="slider-header">
+            <div class="slider-title">⚡ 打球範囲の広さ</div>
+            <div class="angle-badge" id="angleDisplay">25°</div>
+        </div>
+        
+        <div class="slider-wrapper">
+            <input type="range" id="angleSlider" min="5" max="55" value="25">
+        </div>
+        <div class="slider-labels">
+            <span>5°</span>
+            <span>広い(55°)</span>
+        </div>
+
+        <div class="preset-grid">
+            <button class="preset-btn" onclick="setPreset(15, this)">
+                <div>狭め (15°)</div>
+                <div>ロブ等</div>
+            </button>
+            <button class="preset-btn active" onclick="setPreset(25, this)">
+                <div>標準 (25°)</div>
+                <div>通常の打球</div>
+            </button>
+            <button class="preset-btn" onclick="setPreset(35, this)">
+                <div>広め (35°)</div>
+                <div>角度のある球</div>
+            </button>
+            <button class="preset-btn" onclick="setPreset(50, this)">
+                <div>最大 (50°)</div>
+                <div>ドロップ等</div>
+            </button>
+        </div>
+    </div>
 </div>
-<div class="controls">
-<label>🎛️ 後衛を左右に動かす</label>
-<input type="range" id="move-slider" class="slider" min="10" max="90" value="50">
-</div>
-<div class="info">
-<b>📱 アプリの使い方</b><br>
-・下の赤い操作バーを左右にスライドさせると、後衛（赤丸）がスムーズに動きます。<br>
-・相手コートへの打球範囲（黄色）と、前衛（青丸）の位置が<b>自動でピッタリ直線上に連動</b>します。
-</div>
+
 <script>
-const crt=document.getElementById('crt');
-const rear=document.getElementById('rear');
-const front=document.getElementById('front');
-const poly=document.getElementById('poly');
-const slider=document.getElementById('move-slider');
-let rx=50;const ry=85;
-function update(){
-rear.style.left=rx+'%';rear.style.top=ry+'%';
-const w=crt.clientWidth;const h=crt.clientHeight;
-const px=(rx/100)*w;const py=(ry/100)*h;
-poly.setAttribute('points',`${px},${py} ${(10/100)*w},0 ${(90/100)*w},0`);
-let fx=rx+(50-rx)*(ry-55)/(ry-0);
-if(fx<15)fx=15;if(fx>85)fx=85;
-front.style.left=fx+'%';front.style.top='55%';
+const canvas = document.getElementById('courtCanvas');
+const ctx = canvas.getContext('2d');
+const angleSlider = document.getElementById('angleSlider');
+const angleDisplay = document.getElementById('angleDisplay');
+
+// シミュレーションの状態管理
+let court = {
+    x: 20, y: 30,
+    width: 320, height: 400
+};
+
+// 相手（奥側）の打点位置（初期値は右奥）
+let opponentX = court.x + court.width * 0.7; 
+let opponentY = court.y + 10; 
+
+// 自コート（手前側）のベースライン中央（レシーバー・後衛の基準点）
+let myPlayerX = court.x + court.width / 2;
+let myPlayerY = court.x + court.height + 10;
+
+// 前衛のポジション（自動計算される）
+let volleyerX = 0;
+let volleyerY = 0;
+
+let isDragging = false;
+let spreadAngle = parseInt(angleSlider.value); // 打球の展開角度
+
+// マウス・タッチイベントの登録
+canvas.addEventListener('mousedown', startDrag);
+canvas.addEventListener('mousemove', drag);
+canvas.addEventListener('mouseup', endDrag);
+canvas.addEventListener('touchstart', startDrag, {passive: false});
+canvas.addEventListener('touchmove', drag, {passive: false});
+canvas.addEventListener('touchend', endDrag);
+
+angleSlider.addEventListener('input', (e) => {
+    spreadAngle = parseInt(e.target.value);
+    angleDisplay.innerText = spreadAngle + '°';
+    removePresetActive();
+    draw();
+});
+
+function startDrag(e) {
+    const pos = getMousePos(e);
+    // 赤い打点（相手位置）の近くをクリックしたか判定
+    const dist = Math.hypot(pos.x - opponentX, pos.y - opponentY);
+    if (dist < 20) {
+        isDragging = true;
+        e.preventDefault();
+    }
 }
-slider.addEventListener('input',(e)=>{rx=parseInt(e.target.value);update();});
-window.addEventListener('resize',update);
-update();
-</script>
-</body>
-</html>
+
+function drag(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    const pos = getMousePos(e);
+    
+    // 相手コートの後ろ側の範囲内にドラッグを制限
+    opponentX = Math.max(court.x, Math.min(court.x + court.width, pos.x));
+    draw();
+}
+
+function endDrag() {
+    isDragging = false;
+}
+
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function setPreset(val, btn) {
+    angleSlider.value = val;
+    spreadAngle = val;
+    angleDisplay.innerText = val + '°';
+    
+    removePresetActive();
+    btn.classList.add('active');
+    draw();
+}
+
+function removePresetActive() {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+}
+
+// メインの描画処理
+function draw() {
+    // 画面クリア
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. テニスコートの背景とラインの描画
+    ctx.fillStyle = '#1e5e3a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+
+    // 外枠（コート全体）
+    ctx.strokeRect(court.x, court.y, court.width, court.height);
+
+    // サービスサイドライン（ダブルス・シングルス兼用としてシンプルに外枠基準で分割）
+    let netY = court.y + court.height / 2;
+    let serviceLineDist = court.height * 0.28; // サービスラインの位置調整
+
+    // ネット（中央の白線）
+    ctx.beginPath();
+    ctx.moveTo(court.x - 5, netY);
+    ctx.lineTo(court.x + court.width + 5, netY);
+    ctx.stroke();
+
+    // サービスライン（手前と奥）
+    ctx.beginPath();
+    ctx.moveTo(court.x, netY - serviceLineDist);
+    ctx.lineTo(court.x + court.width, netY - serviceLineDist);
+    ctx.moveTo(court.x, netY + serviceLineDist);
+    ctx.lineTo(court.x + court.width, netY + serviceLineDist);
+    ctx.stroke();
+
+    // センターライン
+    ctx.beginPath();
+    ctx.moveTo(court.x + court.width / 2, netY - serviceLineDist);
+    ctx.lineTo(court.x + court.width / 2, netY + serviceLineDist);
+    ctx.stroke();
+
+    // 前衛の基準ポジションライン（緑の破線）
+    ctx.strokeStyle = '#a3e635';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(court.x, netY + serviceLineDist * 0.5);
+    ctx.lineTo(court.x + court.width, netY + serviceLineDist * 0.5);
+    ctx.stroke();
+    ctx.setLineDash([]); // 点線リセット
+
+    // コートラベル
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('相手コート（奥）', canvas.width / 2, court.y - 10);
+    ctx.fillText('自分コート（手前）', canvas.width / 2, court.y + court.height + 20);
+    
+    ctx.font = '10px sans-serif';
+    ctx.fillText('ネ', court.x + court.width + 12, netY + 4);
+
+    // 2. 計算：打点から自コート両隅への展開角度と「前衛の正しい位置」
+    // 打点からセンターライン（セオリーの中心線）
+    let angleToCenter = Math.atan2(myPlayerY - opponentY, myPlayerX - opponentX);
+    
+    // スライダーの角度（ラジアン変換）
+    let radSpread = (spreadAngle * Math.PI) / 180;
+    let leftAngle = angleToCenter - radSpread / 2;
+    let rightAngle = angleToCenter + radSpread / 2;
+
+    // 角度線がベースライン（コート最下部）と交わるX座標を算出
+    let length = court.height + 50; 
+    let leftX = opponentX + length * Math.cos(leftAngle);
+    let leftY = opponentY + length * Math.sin(leftAngle);
+    let rightX = opponentX + length * Math.cos(rightAngle);
+    let rightY = opponentY + length * Math.sin(rightAngle);
+
+    // 3. 角度範囲（色付きの扇状エリア）の描画
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.15)'; // 薄い赤
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(opponentX, opponentY);
+    ctx.lineTo(leftX, leftY);
+    ctx.lineTo(rightX, rightY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 4. セオリーの中心線（青い点線）
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(opponentX, opponentY);
+    ctx.lineTo(myPlayerX, myPlayerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 5. 前衛（黄色）の位置決定
+    // 前衛は「ネットとサービスラインの間」の高さで、青い点線（コースのド真ん中）の上に立つのが基本セオリー
+    volleyerY = netY + serviceLineDist * 0.5; 
+    // 相似比・直線の方程式から前衛のX座標を算出
+    let t = (volleyerY - opponentY) / (myPlayerY - opponentY);
+    volleyerX = opponentX + t * (myPlayerX - opponentX);
+
+    // 6. 前衛（黄色）の描画
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(volleyerX, volleyerY, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // 外
