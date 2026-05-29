@@ -20,18 +20,15 @@ body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;displa
 .player{position:absolute;width:38px;height:38px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:11px;font-weight:bold;color:white;transform:translate(-50%,-50%);box-shadow:0 4px 8px rgba(0,0,0,0.3);user-select:none;}
 #rear{background:#e74c3c;border:2px solid white;z-index:10;}
 #front{background:#3498db;border:2px solid white;}
-
-/* 【新設】操作バーのエリア */
 .controls{width:100%;max-width:360px;background:white;border-radius:12px;padding:15px;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);box-sizing:border-box;text-align:center;}
 .controls label{display:block;font-size:13px;font-weight:bold;color:#2c3e50;margin-bottom:8px;}
 .slider{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:#dee2e6;outline:none;}
-.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:#e74c3c;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.2);}
-
+.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:#e74c3c;cursor:pointer;}
 .info{width:100%;max-width:360px;background:white;border-radius:12px;padding:15px;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);color:#64748b;font-size:12px;line-height:1.6;margin-bottom:40px;box-sizing:border-box;}
 </style>
 </head>
 <body>
-<div class="title">ソフトテニス ポジションシミュレーター</div>
+<div class="title">ソフトテニス ポジション確認</div>
 <div class="court" id="crt">
 <div class="line outer"></div>
 <div class="dl"></div>
@@ -44,17 +41,14 @@ body{margin:0;padding:20px 10px;background:#f5f6fa;font-family:sans-serif;displa
 <div id="front" class="player">前衛</div>
 <div id="rear" class="player">後衛</div>
 </div>
-
 <div class="controls">
 <label>🎛️ 後衛を左右に動かす</label>
 <input type="range" id="move-slider" class="slider" min="10" max="90" value="50">
 </div>
-
 <div class="info">
 <b>📱 アプリの使い方</b><br>
-・コートの下にある<b>赤いボタンの操作バー</b>を左右にスライドさせてください。<br>
-・赤い丸（後衛）が連動して左右にスムーズに動きます。<br>
-・後衛の動きに合わせて、相手コートへの打球範囲（黄色）と、青い丸（前衛）のポジションが<b>自動でピッタリ直線上に連動</b>します！
+・下の赤い操作バーを左右にスライドさせると、後衛（赤丸）がスムーズに動きます。<br>
+・相手コートへの打球範囲（黄色）と、前衛（青丸）の位置が<b>自動でピッタリ直線上に連動</b>します。
 </div>
 <script>
 const crt=document.getElementById('crt');
@@ -62,7 +56,6 @@ const rear=document.getElementById('rear');
 const front=document.getElementById('front');
 const poly=document.getElementById('poly');
 const slider=document.getElementById('move-slider');
-
 let rx=50;const ry=85;
 function update(){
 rear.style.left=rx+'%';rear.style.top=ry+'%';
@@ -73,10 +66,7 @@ let fx=rx+(50-rx)*(ry-55)/(ry-0);
 if(fx<15)fx=15;if(fx>85)fx=85;
 front.style.left=fx+'%';front.style.top='55%';
 }
-slider.addEventListener('input',(e)=>{
-rx=parseInt(e.target.value);
-update();
-});
+slider.addEventListener('input',(e)=>{rx=parseInt(e.target.value);update();});
 window.addEventListener('resize',update);
 update();
 </script>
